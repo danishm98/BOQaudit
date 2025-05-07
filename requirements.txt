@@ -7,4 +7,3 @@ Pillow
 ipywidgets
 IPython
 xlrd
-zipfile
