@@ -97,6 +97,7 @@ def save_results_to_excel(results, search_phrase):
         sheet.column_dimensions[get_column_letter(col_num)].width = width
 
     workbook.save(output_file)
+    
     return output_file
 
 def open_file(file_path):
@@ -127,9 +128,16 @@ def display_results(results, search_phrase, folder_path):
     st.dataframe(df_results)
 
     if st.button("Save Results"):
+        print("Save Results button clicked")
         output_file = save_results_to_excel(results, search_phrase)
-        st.success(f"Results saved to: {output_file}")
-        open_file(output_file)
+        
+        with open(output_file, "rb") as f:
+            st.download_button(
+                label="Download Excel",
+                data=f,
+                file_name=output_file,
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
 
 def main():
     st.title("Excel File Search App")
