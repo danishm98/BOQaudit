@@ -129,15 +129,18 @@ def display_results(results, search_phrase, folder_path):
     if st.button("Save Results"):
         print("Save Results button clicked")
         output_file = save_results_to_excel(results, search_phrase)
+
+
+        
+
         
         with open(output_file, "rb") as f:
             excel_data = io.BytesIO(f.read())
         
         st.download_button(
             label="Download Excel",
-            data=excel_data.getvalue(),
-            file_name=output_file,
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            data=output_pptx,
+            file_name="abc.xlsx"
         )
 
 def main():
