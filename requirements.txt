@@ -6,3 +6,4 @@ matplotlib
 Pillow
 ipywidgets
 IPython
+xlrd
