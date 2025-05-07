@@ -1,5 +1,3 @@
-# ------ STREAMLIT ---------------------------
-
 import os
 import pandas as pd
 import streamlit as st
@@ -9,6 +7,9 @@ from openpyxl.utils import get_column_letter
 from difflib import get_close_matches
 import zipfile
 import io
+
+# Set wide layout for Streamlit app
+st.set_page_config(layout="wide")
 
 def search_phrase_in_excel(folder_path, search_phrase, exact_match):
     results = []
@@ -33,7 +34,7 @@ def search_phrase_in_excel(folder_path, search_phrase, exact_match):
                                (not exact_match and get_close_matches(search_phrase_lower, [cell_value])):
                                 results.append({
                                     'No.': len(results) + 1,
-                                    'File (double-click to open)': filename,
+                                    'File': filename,
                                     'file_path': file_path,
                                     'Search Phrase': search_phrase,
                                     'sheet_name': sheet_name,
@@ -51,7 +52,7 @@ def save_results_to_excel(results, search_phrase):
     for result in results:
         row_data = {
             'No.': result['No.'],
-            'File (double-click to open)': result['File (double-click to open)'],
+            'File': result['File'],
             'Search Phrase': result['Search Phrase'],
             'sheet_name': result['sheet_name'],
             'row_index': result['row_index']
@@ -73,19 +74,21 @@ def save_results_to_excel(results, search_phrase):
                 for cell in column:
                     cell.fill = fill
 
-        file_col_idx = df_results.columns.get_loc('File (double-click to open)') + 1
+        file_col_idx = df_results.columns.get_loc('File') + 1
         for row in range(2, len(df_results) + 2):
             file_cell = sheet[f'{get_column_letter(file_col_idx)}{row}']
             match_result = results[row - 2]
-            file_path = match_result['file_path']
+            file_name = match_result['File']
             sheet_name = match_result['sheet_name']
             row_number = match_result['row_index'] + 2
-            file_cell.hyperlink = f"file:///{file_path}#'{sheet_name}'!A{row_number}"
+            static_path = r"C:\Users\MemonD\preprocessed BOQs minus NRM and Cat"
+            full_path = os.path.join(static_path, file_name).replace("\\", "/")
+            file_cell.hyperlink = f"file:///{full_path}#'{sheet_name}'!A{row_number}"
             file_cell.style = "Hyperlink"
 
         column_widths = {
             "No.": 5,
-            "File (double-click to open)": 30,
+            "File": 30,
             "Search Phrase": 20,
             "Item": 50,
             "Description": 50
@@ -104,19 +107,19 @@ def display_results(results, search_phrase, folder_path):
 
     df_results = pd.DataFrame([{
         'No.': result['No.'],
-        'File (double-click to open)': result['File (double-click to open)'],
+        'File': result['File'],
         'Search Phrase': result['Search Phrase'],
         'sheet_name': result['sheet_name'],
         'row_index': result['row_index'],
         **result['row']
     } for result in results])
 
-    st.dataframe(df_results)
+    st.dataframe(df_results, use_container_width=True)
 
     # Immediately prepare the download after showing results
     excel_data = save_results_to_excel(results, search_phrase)
     st.download_button(
-        label="Download Excel File",
+        label="Download Results",
         data=excel_data,
         file_name=f"Search_Results_{search_phrase}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
