@@ -8,7 +8,7 @@ from difflib import get_close_matches
 import zipfile
 import io
 
-# Set wide layout for Streamlit app
+# Wide layout
 st.set_page_config(layout="wide")
 
 def search_phrase_in_excel(folder_path, search_phrase, exact_match):
@@ -38,7 +38,7 @@ def search_phrase_in_excel(folder_path, search_phrase, exact_match):
                                     'file_path': file_path,
                                     'Search Phrase': search_phrase,
                                     'sheet_name': sheet_name,
-                                    'row_index': index,
+                                    'row_index': index + 2,  # Excel row
                                     'row': row.iloc[:6].to_dict()
                                 })
             except Exception as e:
@@ -51,7 +51,6 @@ def save_results_to_excel(results, search_phrase):
 
     for result in results:
         row_data = {
-            'No.': result['No.'],
             'File': result['File'],
             'Search Phrase': result['Search Phrase'],
             'sheet_name': result['sheet_name'],
@@ -80,18 +79,18 @@ def save_results_to_excel(results, search_phrase):
             match_result = results[row - 2]
             file_name = match_result['File']
             sheet_name = match_result['sheet_name']
-            row_number = match_result['row_index'] + 2
+            row_number = match_result['row_index']
             static_path = r"C:\Users\MemonD\preprocessed BOQs minus NRM and Cat"
             full_path = os.path.join(static_path, file_name).replace("\\", "/")
             file_cell.hyperlink = f"file:///{full_path}#'{sheet_name}'!A{row_number}"
             file_cell.style = "Hyperlink"
 
+        # Adjust column widths
         column_widths = {
-            "No.": 5,
             "File": 30,
             "Search Phrase": 20,
-            "Item": 50,
-            "Description": 50
+            "Item": 45,         # Reduced by 10%
+            "Description": 45   # Reduced by 10%
         }
 
         for col_num, col_name in enumerate(df_results.columns, start=1):
@@ -106,7 +105,6 @@ def display_results(results, search_phrase, folder_path):
     st.write(f"Folder: {folder_path}")
 
     df_results = pd.DataFrame([{
-        'No.': result['No.'],
         'File': result['File'],
         'Search Phrase': result['Search Phrase'],
         'sheet_name': result['sheet_name'],
@@ -116,7 +114,6 @@ def display_results(results, search_phrase, folder_path):
 
     st.dataframe(df_results, use_container_width=True)
 
-    # Immediately prepare the download after showing results
     excel_data = save_results_to_excel(results, search_phrase)
     st.download_button(
         label="Download Results",
