@@ -132,7 +132,7 @@ def display_results(results, search_phrase, folder_path):
         output_file = save_results_to_excel(results, search_phrase)
         
         with open(output_file, "rb") as f:
-            excel_data = f.read()
+            excel_data = io.BytesIO(f.read())
         
         st.download_button(
             label="Download Excel",
@@ -140,8 +140,6 @@ def display_results(results, search_phrase, folder_path):
             file_name=output_file,
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-
-
 
 def main():
     st.title("Excel File Search App")
