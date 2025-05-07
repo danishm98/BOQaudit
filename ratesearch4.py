@@ -72,7 +72,6 @@ def save_results_to_excel(results, search_phrase):
         if column[0].value and str(column[0].value).lower() == 'rate':
             for cell in column:
                 cell.fill = fill
-
     file_col_idx = df_results.columns.get_loc('File (double-click to open)') + 1
     for row in range(2, len(df_results) + 2):
         file_cell = sheet[f'{get_column_letter(file_col_idx)}{row}']
@@ -136,7 +135,7 @@ def display_results(results, search_phrase, folder_path):
         
         st.download_button(
             label="Download Excel",
-            data=excel_data,
+            data=excel_data.getvalue(),
             file_name=output_file,
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
