@@ -1,3 +1,5 @@
+# -----------------------------------STREAMLIT--------------------------
+
 import os
 import pandas as pd
 import streamlit as st
@@ -11,7 +13,6 @@ import io
 
 def search_phrase_in_excel(folder_path, search_phrase, exact_match):
     results = []
-
     for filename in os.listdir(folder_path):
         if (filename.endswith(".xlsx") or filename.endswith(".xls")) and not filename.startswith("~$"):
             file_path = os.path.join(folder_path, filename)
@@ -29,8 +30,8 @@ def search_phrase_in_excel(folder_path, search_phrase, exact_match):
                         for index, row in sheet_df.iterrows():
                             cell_value = str(row['Item']).lower()
                             search_phrase_lower = search_phrase.lower()
-                            print(f"Checking cell value: {cell_value} against search phrase: {search_phrase_lower}")
-                            if (exact_match and search_phrase_lower in cell_value) or (not exact_match and get_close_matches(search_phrase_lower, [cell_value])):
+                            if (exact_match and search_phrase_lower in cell_value) or \
+                               (not exact_match and get_close_matches(search_phrase_lower, [cell_value])):
                                 results.append({
                                     'No.': len(results) + 1,
                                     'File (double-click to open)': filename,
@@ -42,11 +43,10 @@ def search_phrase_in_excel(folder_path, search_phrase, exact_match):
                                 })
             except Exception as e:
                 st.error(f"Error reading {file_path}: {e}")
-
     return results
 
 def save_results_to_excel(results, search_phrase):
-    output_file = f'Search_Results_{search_phrase}.xlsx'
+    output = io.BytesIO()
     rows = []
 
     for result in results:
@@ -62,55 +62,42 @@ def save_results_to_excel(results, search_phrase):
 
     df_results = pd.DataFrame(rows)
     df_results = df_results.loc[:, ~df_results.columns.str.contains('^Unnamed')]
-    df_results.to_excel(output_file, index=False)
 
-    workbook = load_workbook(output_file)
-    sheet = workbook.active
-    fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df_results.to_excel(writer, index=False)
+        workbook = writer.book
+        sheet = writer.sheets['Sheet1']
+        fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
 
-    for column in sheet.iter_cols():
-        if column[0].value and str(column[0].value).lower() == 'rate':
-            for cell in column:
-                cell.fill = fill
+        for column in sheet.iter_cols():
+            if column[0].value and str(column[0].value).lower() == 'rate':
+                for cell in column:
+                    cell.fill = fill
 
-    file_col_idx = df_results.columns.get_loc('File (double-click to open)') + 1
-    for row in range(2, len(df_results) + 2):
-        file_cell = sheet[f'{get_column_letter(file_col_idx)}{row}']
-        file_name = file_cell.value
-        match_result = results[row - 2]
-        file_path = match_result['file_path']
-        sheet_name = match_result['sheet_name']
-        row_number = match_result['row_index'] + 2
-        file_cell.hyperlink = f"file:///{file_path}#'{sheet_name}'!A{row_number}"
-        file_cell.style = "Hyperlink"
+        file_col_idx = df_results.columns.get_loc('File (double-click to open)') + 1
+        for row in range(2, len(df_results) + 2):
+            file_cell = sheet[f'{get_column_letter(file_col_idx)}{row}']
+            match_result = results[row - 2]
+            file_path = match_result['file_path']
+            sheet_name = match_result['sheet_name']
+            row_number = match_result['row_index'] + 2
+            file_cell.hyperlink = f"file:///{file_path}#'{sheet_name}'!A{row_number}"
+            file_cell.style = "Hyperlink"
 
-    column_widths = {
-        "No.": 5,
-        "File (double-click to open)": 30,
-        "Search Phrase": 20,
-        "Item": 50,
-        "Description": 50
-    }
+        column_widths = {
+            "No.": 5,
+            "File (double-click to open)": 30,
+            "Search Phrase": 20,
+            "Item": 50,
+            "Description": 50
+        }
 
-    for col_num, col_name in enumerate(df_results.columns, start=1):
-        width = column_widths.get(col_name, 10)
-        sheet.column_dimensions[get_column_letter(col_num)].width = width
+        for col_num, col_name in enumerate(df_results.columns, start=1):
+            width = column_widths.get(col_name, 10)
+            sheet.column_dimensions[get_column_letter(col_num)].width = width
 
-    workbook.save(output_file)
-    
-    return output_file
-
-def open_file(file_path):
-    if os.path.isfile(file_path):
-        try:
-            if os.name == 'nt':
-                subprocess.run(['start', '', file_path], shell=True)
-            else:
-                subprocess.run(['xdg-open', file_path])
-        except Exception as e:
-            raise Exception(f"Failed to open file {file_path}: {e}")
-    else:
-        raise FileNotFoundError(f"The file {file_path} does not exist.")
+    output.seek(0)
+    return output
 
 def display_results(results, search_phrase, folder_path):
     st.title(f"Search Results for '{search_phrase}'")
@@ -128,20 +115,11 @@ def display_results(results, search_phrase, folder_path):
     st.dataframe(df_results)
 
     if st.button("Save Results"):
-        print("Save Results button clicked")
-        output_file = save_results_to_excel(results, search_phrase)
-        
-        with open(output_file, "rb") as f:
-            excel_data = io.BytesIO(f.read())
-        
-        st.session_state['excel_data'] = excel_data.getvalue()
-        st.session_state['output_file'] = output_file
-
-    if 'excel_data' in st.session_state:
+        excel_data = save_results_to_excel(results, search_phrase)
         st.download_button(
             label="Download Excel",
-            data=st.session_state['excel_data'],
-            file_name=st.session_state['output_file'],
+            data=excel_data,
+            file_name=f"Search_Results_{search_phrase}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
