@@ -142,6 +142,7 @@ def display_results(results, search_phrase, folder_path):
         )
 
 
+
 def main():
     st.title("Excel File Search App")
 
