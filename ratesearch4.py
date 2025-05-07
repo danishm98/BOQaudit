@@ -132,14 +132,15 @@ def display_results(results, search_phrase, folder_path):
         output_file = save_results_to_excel(results, search_phrase)
         
         with open(output_file, "rb") as f:
-            st.download_button(
-                label="Download Excel",
-                data=f,
-                file_name = "test.xlsx"
-                #file_name=output_file
-                #,
-                #mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+            excel_data = f.read()
+        
+        st.download_button(
+            label="Download Excel",
+            data=excel_data,
+            file_name=output_file,
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
 
 def main():
     st.title("Excel File Search App")
