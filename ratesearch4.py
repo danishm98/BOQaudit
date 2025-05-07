@@ -72,6 +72,7 @@ def save_results_to_excel(results, search_phrase):
         if column[0].value and str(column[0].value).lower() == 'rate':
             for cell in column:
                 cell.fill = fill
+
     file_col_idx = df_results.columns.get_loc('File (double-click to open)') + 1
     for row in range(2, len(df_results) + 2):
         file_cell = sheet[f'{get_column_letter(file_col_idx)}{row}']
@@ -129,18 +130,19 @@ def display_results(results, search_phrase, folder_path):
     if st.button("Save Results"):
         print("Save Results button clicked")
         output_file = save_results_to_excel(results, search_phrase)
-
-
-        
-
         
         with open(output_file, "rb") as f:
             excel_data = io.BytesIO(f.read())
         
+        st.session_state['excel_data'] = excel_data.getvalue()
+        st.session_state['output_file'] = output_file
+
+    if 'excel_data' in st.session_state:
         st.download_button(
             label="Download Excel",
-            data=output_pptx,
-            file_name="abc.xlsx"
+            data=st.session_state['excel_data'],
+            file_name=st.session_state['output_file'],
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
 def main():
