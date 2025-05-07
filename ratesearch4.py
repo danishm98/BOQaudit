@@ -27,8 +27,10 @@ def search_phrase_in_excel(folder_path, search_phrase, exact_match):
 
                     if 'Item' in sheet_df.columns:
                         for index, row in sheet_df.iterrows():
-                            cell_value = str(row['Item'])
-                            if (exact_match and search_phrase in cell_value) or (not exact_match and get_close_matches(search_phrase, [cell_value])):
+                            cell_value = str(row['Item']).lower()
+                            search_phrase_lower = search_phrase.lower()
+                            print(f"Checking cell value: {cell_value} against search phrase: {search_phrase_lower}")
+                            if (exact_match and search_phrase_lower in cell_value) or (not exact_match and get_close_matches(search_phrase_lower, [cell_value])):
                                 results.append({
                                     'No.': len(results) + 1,
                                     'File (double-click to open)': filename,
@@ -70,6 +72,7 @@ def save_results_to_excel(results, search_phrase):
         if column[0].value and str(column[0].value).lower() == 'rate':
             for cell in column:
                 cell.fill = fill
+
     file_col_idx = df_results.columns.get_loc('File (double-click to open)') + 1
     for row in range(2, len(df_results) + 2):
         file_cell = sheet[f'{get_column_letter(file_col_idx)}{row}']
