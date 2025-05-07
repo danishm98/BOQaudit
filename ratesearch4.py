@@ -1,4 +1,4 @@
-# -----------------------------------STREAMLIT--------------------------
+# ------ STREAMLIT ---------------------------
 
 import os
 import pandas as pd
@@ -7,7 +7,6 @@ from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from difflib import get_close_matches
-import subprocess
 import zipfile
 import io
 
@@ -114,14 +113,14 @@ def display_results(results, search_phrase, folder_path):
 
     st.dataframe(df_results)
 
-    if st.button("Save Results"):
-        excel_data = save_results_to_excel(results, search_phrase)
-        st.download_button(
-            label="Download Excel",
-            data=excel_data,
-            file_name=f"Search_Results_{search_phrase}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    # Immediately prepare the download after showing results
+    excel_data = save_results_to_excel(results, search_phrase)
+    st.download_button(
+        label="Download Excel File",
+        data=excel_data,
+        file_name=f"Search_Results_{search_phrase}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 def main():
     st.title("Excel File Search App")
