@@ -135,7 +135,8 @@ def display_results(results, search_phrase, folder_path):
             st.download_button(
                 label="Download Excel",
                 data=f,
-                file_name=output_file
+                file_name = "test.xlsx"
+                #file_name=output_file
                 #,
                 #mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
