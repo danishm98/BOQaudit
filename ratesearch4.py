@@ -123,9 +123,9 @@ def display_results(results, search_phrase, folder_path):
     )
 
 def main():
-    st.title("Excel File Search App")
+    st.title("BOQ superset advanced search")
 
-    uploaded_file = st.file_uploader("Upload a zipped folder of Excel files", type=["zip"])
+    uploaded_file = st.file_uploader("Upload a zipped folder of the BOQ Excel files", type=["zip"])
     search_phrase = st.text_input("Enter search phrase:")
     exact_match = st.radio("Match Type", ("Exact", "Approx")) == "Exact"
 
