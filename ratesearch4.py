@@ -10,7 +10,7 @@ import io
 
 # Wide layout
 st.set_page_config(layout="wide")
-
+ 
 def search_phrase_in_excel(folder_path, search_phrase, exact_match):
     results = []
     for filename in os.listdir(folder_path):
